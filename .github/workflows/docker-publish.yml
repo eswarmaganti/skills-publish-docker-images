@@ -3,6 +3,12 @@ name: Docker Publish
 on: 
   push:
     branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    
+      
 
 permissions:
   contents: read
@@ -23,12 +29,15 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/eswarmaganti/skills-publish-docker-images/stackoverflown
       - name: Build and Push Image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           platforms: linux/amd64, linux/arm64
-          tags: |
-            ghcr.io/eswarmaganti/skills-publish-docker-images/stackoverflown:main
-            ghcr.io/eswarmaganti/skills-publish-docker-images/stackoverflown:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
